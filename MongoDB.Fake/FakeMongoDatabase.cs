@@ -52,7 +52,7 @@ namespace MongoDB.Fake
 
         public override void DropCollection(string name, CancellationToken cancellationToken = default(CancellationToken))
         {
-            throw new NotImplementedException();
+            _collections.TryRemove(name, out _);
         }
 
         public override void RenameCollection(string oldName, string newName, RenameCollectionOptions options = null, CancellationToken cancellationToken = default(CancellationToken))

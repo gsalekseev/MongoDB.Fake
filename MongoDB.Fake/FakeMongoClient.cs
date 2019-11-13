@@ -38,7 +38,7 @@ namespace MongoDB.Fake
 
         public override void DropDatabase(string name, CancellationToken cancellationToken = default(CancellationToken))
         {
-            throw new NotImplementedException();
+            _databases.TryRemove(name, out _);
         }
 
         public override IMongoClient WithReadConcern(ReadConcern readConcern)

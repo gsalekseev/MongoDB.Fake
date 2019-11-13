@@ -2,7 +2,7 @@
   <PropertyGroup>
     <PackageId>MongoDB.Fake</PackageId>
     <Title>MongoDB.Fake</Title>
-    <Authors>balakin</Authors>
+    <Authors>balakin, win7user10</Authors>
     <Description>MongoDB.Fake is an in-memory implementation of IMongoClient, IMongoDatabase and IMongoCollection for unit test purposes.</Description>
     <PackageProjectUrl>http://github.com/nbalakin/MongoDB.Fake</PackageProjectUrl>
     <RepositoryUrl>http://github.com/nbalakin/MongoDB.Fake</RepositoryUrl>
