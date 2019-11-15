@@ -1,11 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using MongoDB.Driver;
-
-namespace MongoDB.Fake
+﻿namespace MongoDB.Fake
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using MongoDB.Driver;
+
     public class AsyncCursor<T> : IAsyncCursor<T>
     {
         enum AsyncCursorState

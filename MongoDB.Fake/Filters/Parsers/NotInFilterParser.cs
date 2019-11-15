@@ -1,9 +1,9 @@
-using System;
-using System.Collections.ObjectModel;
-using MongoDB.Bson;
-
 namespace MongoDB.Fake.Filters.Parsers
 {
+    using System;
+    using System.Collections.ObjectModel;
+    using MongoDB.Bson;
+
     internal class NotInFilterParser : IFilterParser
     {
         public IFilter Parse(BsonValue filter)

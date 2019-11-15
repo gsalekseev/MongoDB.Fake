@@ -1,11 +1,10 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
-using MongoDB.Bson;
-using MongoDB.Driver;
-using MongoDB.Driver.Core.Clusters;
-
-namespace MongoDB.Fake
+﻿namespace MongoDB.Fake
 {
+    using System.Threading;
+    using System.Threading.Tasks;
+    using MongoDB.Bson;
+    using MongoDB.Driver;
+    using MongoDB.Driver.Core.Clusters;
     public abstract class SyncMongoClient : IMongoClient
     {
         public abstract ICluster Cluster { get; }

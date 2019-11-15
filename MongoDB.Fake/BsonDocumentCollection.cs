@@ -1,9 +1,8 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using MongoDB.Bson;
-
-namespace MongoDB.Fake
+﻿namespace MongoDB.Fake
 {
+    using System.Collections;
+    using System.Collections.Generic;
+    using MongoDB.Bson;
     public class BsonDocumentCollection : ICollection<BsonDocument>
     {
         private readonly ICollection<BsonDocument> _collectionImplementation;

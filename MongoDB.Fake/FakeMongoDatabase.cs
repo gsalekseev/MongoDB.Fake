@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Threading;
-using MongoDB.Bson;
-using MongoDB.Driver;
-
-namespace MongoDB.Fake
+﻿namespace MongoDB.Fake
 {
+    using System;
+    using System.Collections.Concurrent;
+    using System.Collections.Generic;
+    using System.Threading;
+    using MongoDB.Bson;
+    using MongoDB.Driver;
     public class FakeMongoDatabase : SyncMongoDatabase
     {
         private readonly FakeMongoClient _client;

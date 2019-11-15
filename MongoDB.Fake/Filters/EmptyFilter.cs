@@ -1,7 +1,7 @@
-﻿using MongoDB.Bson;
-
-namespace MongoDB.Fake.Filters
+﻿namespace MongoDB.Fake.Filters
 {
+    using MongoDB.Bson;
+
     internal class EmptyFilter : IFilter
     {
         public bool Filter(BsonValue value)

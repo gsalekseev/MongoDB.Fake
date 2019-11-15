@@ -1,8 +1,8 @@
-﻿using MongoDB.Bson;
-using System.Linq;
-
-namespace MongoDB.Fake.Filters
+﻿namespace MongoDB.Fake.Filters
 {
+    using MongoDB.Bson;
+    using System.Linq;
+
     internal class EqualFilter : IFilter
     {
         private readonly BsonValue _specifiedValue;

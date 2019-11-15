@@ -1,11 +1,10 @@
-﻿using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using MongoDB.Bson;
-using MongoDB.Driver;
-
-namespace MongoDB.Fake
+﻿namespace MongoDB.Fake
 {
+    using System.Collections.Generic;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using MongoDB.Bson;
+    using MongoDB.Driver;
     public abstract class SyncMongoDatabase : IMongoDatabase
     {
         public abstract IMongoClient Client { get; }

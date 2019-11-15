@@ -1,10 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using MongoDB.Bson;
-
-namespace MongoDB.Fake.Filters.Parsers
+﻿namespace MongoDB.Fake.Filters.Parsers
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using MongoDB.Bson;
+
     internal class FilterParser : IFilterParser
     {
         private static readonly Lazy<IFilterParser> _instance = new Lazy<IFilterParser>(CreateFilterParser);

@@ -1,7 +1,7 @@
-﻿using MongoDB.Bson;
-
-namespace MongoDB.Fake.Filters.Parsers
+﻿namespace MongoDB.Fake.Filters.Parsers
 {
+    using MongoDB.Bson;
+
     internal class NotFilterParser : IFilterParser
     {
         private readonly IFilterParser _rootFilterParser;

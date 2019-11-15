@@ -1,15 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using MongoDB.Bson;
-using MongoDB.Bson.IO;
-using MongoDB.Bson.Serialization;
-using MongoDB.Driver;
-using MongoDB.Fake.Filters.Parsers;
-
-namespace MongoDB.Fake
+﻿namespace MongoDB.Fake
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Threading;
+    using MongoDB.Bson;
+    using MongoDB.Bson.IO;
+    using MongoDB.Bson.Serialization;
+    using MongoDB.Driver;
+    using MongoDB.Fake.Filters.Parsers;
     public class FakeMongoCollection<TDocument> : SyncMongoCollection<TDocument>
     {
         private readonly IFilterParser _filterParser;

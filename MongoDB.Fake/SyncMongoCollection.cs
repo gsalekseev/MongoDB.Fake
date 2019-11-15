@@ -1,13 +1,12 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using MongoDB.Bson;
-using MongoDB.Bson.Serialization;
-using MongoDB.Driver;
-
-namespace MongoDB.Fake
+﻿namespace MongoDB.Fake
 {
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using MongoDB.Bson;
+    using MongoDB.Bson.Serialization;
+    using MongoDB.Driver;
     public abstract class SyncMongoCollection<TDocument> : IMongoCollection<TDocument>
     {
         public abstract CollectionNamespace CollectionNamespace { get; }

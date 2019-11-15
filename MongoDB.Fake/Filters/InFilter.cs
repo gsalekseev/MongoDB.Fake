@@ -1,9 +1,9 @@
-using System.Collections.Generic;
-using System.Linq;
-using MongoDB.Bson;
-
 namespace MongoDB.Fake.Filters
 {
+    using System.Collections.Generic;
+    using System.Linq;
+    using MongoDB.Bson;
+
     public class InFilter : IFilter
     {
         private readonly IReadOnlyCollection<BsonValue> _values;

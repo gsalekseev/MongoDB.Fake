@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
-
-namespace MongoDB.Fake.Filters.Parsers
+﻿namespace MongoDB.Fake.Filters.Parsers
 {
+    using System.Collections.Generic;
+
     internal class NotOrFilterParser : AggregatorFilterParserBase
     {
         public NotOrFilterParser(IFilterParser rootFilterParser)

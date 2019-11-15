@@ -1,9 +1,9 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using MongoDB.Bson;
-
-namespace MongoDB.Fake.Filters
+﻿namespace MongoDB.Fake.Filters
 {
+    using System.Collections.Generic;
+    using System.Linq;
+    using MongoDB.Bson;
+
     internal class NotOrFilter : IFilter
     {
         private readonly IReadOnlyCollection<IFilter> _children;
