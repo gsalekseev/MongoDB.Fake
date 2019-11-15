@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Threading;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -42,12 +43,17 @@ namespace MongoDB.Fake
 
         public override void CreateCollection(string name, CreateCollectionOptions options = null, CancellationToken cancellationToken = default(CancellationToken))
         {
-            throw new NotImplementedException();
+            _collections.TryAdd(name, new BsonDocumentCollection());
         }
 
         public override void CreateView<TDocument, TResult>(string viewName, string viewOn, PipelineDefinition<TDocument, TResult> pipeline, CreateViewOptions<TDocument> options = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             throw new NotImplementedException();
+        }
+
+        public override IEnumerable<string> GetCollectionNames()
+        {
+            return _collections.Keys;
         }
 
         public override void DropCollection(string name, CancellationToken cancellationToken = default(CancellationToken))

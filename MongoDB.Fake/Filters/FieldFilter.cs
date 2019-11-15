@@ -1,4 +1,5 @@
 ﻿using MongoDB.Bson;
+using System.Linq;
 
 namespace MongoDB.Fake.Filters
 {
@@ -31,12 +32,54 @@ namespace MongoDB.Fake.Filters
             }
 
             var document = inputValue.AsBsonDocument;
-            if (!document.Contains(_fieldName))
+
+            if (!Contains(document, out fieldValue))
             {
                 return false;
             }
+            return true;
+        }
 
-            fieldValue = document[_fieldName];
+        private bool Contains(BsonDocument document, out BsonValue fieldValue)
+        {
+            fieldValue = null;
+            if (_fieldName.Contains("."))
+            {
+                var fieldNames = _fieldName.Split('.').GetEnumerator();
+                BsonValue currentBsonValue = document;
+                while (fieldNames.MoveNext())
+                {
+                    if (currentBsonValue.IsBsonArray)
+                    {
+                        var bsonArray = currentBsonValue.AsBsonArray;
+                        var bsonValues = bsonArray.Select(x => x[(string)fieldNames.Current]);
+                        if (bsonValues.Count() > 0)
+                        {
+                            currentBsonValue = new BsonArray(bsonValues).AsBsonValue;
+                        }
+                    }
+                    else if (currentBsonValue.IsBsonDocument)
+                    {
+                        if (currentBsonValue.AsBsonDocument.Contains((string)fieldNames.Current))
+                        {
+                            currentBsonValue = currentBsonValue[(string)fieldNames.Current];
+                        }
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+                fieldValue = currentBsonValue;
+            }
+            else
+            {
+                if (!document.Contains(_fieldName))
+                {
+                    return false;
+                }
+                fieldValue = document[_fieldName];
+            }
             return true;
         }
     }

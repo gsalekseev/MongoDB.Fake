@@ -210,6 +210,43 @@ namespace MongoDB.Fake.Tests
             actualAllDocuments.Should().BeEquivalentTo(expectedAllDocuments);
         }
 
+        [Fact]
+        public async Task FindSyncWithSkipAndLimit()
+        {
+            var expectedAllDocuments = CreateTestData().ToList();
+            var collection = CreateMongoCollection(nameof(FindSyncWithSkipAndLimit));
+            var result = collection.Find(_ => true)
+                .Skip(1)
+                .Limit(1)
+                .ToList();
+            var item = Assert.Single(result);
+            Assert.Equal(item.Id, expectedAllDocuments[1].Id);
+        }
+
+        [Fact]
+        public async Task ReplaceOne()
+        {
+            var allDocuments = CreateTestData().ToList();
+            var collection = CreateMongoCollection(nameof(ReplaceOne));
+            var itemToReplace = CreateTestData().First();
+            itemToReplace.IntField = 999;
+            await collection.ReplaceOneAsync(x => x.Id == itemToReplace.Id, itemToReplace);
+            var result = Assert.Single(collection.Find(x => x.Id == itemToReplace.Id).ToList());
+            Assert.Equal(999, result.IntField);
+        }
+
+        [Fact]
+        public async Task FindWithArrayAnyFilter()
+        {
+            var testData = CreateTestData().ToList();
+            testData.First().ArrayField = new[]{
+                "Hi",
+                "Bye",
+            };
+            var collection = _mongoCollectionProvider.GetCollection(nameof(FindWithArrayAnyFilter), testData);
+            Assert.Single(collection.Find(x => x.ArrayField.Any(i => i == "Hi")).ToList());
+        }
+
         private IMongoCollection<SimpleTestDocument> CreateMongoCollection(string collectionName)
         {
             var testData = CreateTestData();

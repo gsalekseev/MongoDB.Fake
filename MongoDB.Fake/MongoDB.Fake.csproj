@@ -2,16 +2,16 @@
   <PropertyGroup>
     <PackageId>MongoDB.Fake</PackageId>
     <Title>MongoDB.Fake</Title>
-    <Authors>balakin, win7user10</Authors>
+    <Authors>win7user10</Authors>
     <Description>MongoDB.Fake is an in-memory implementation of IMongoClient, IMongoDatabase and IMongoCollection for unit test purposes.</Description>
-    <PackageProjectUrl>http://github.com/nbalakin/MongoDB.Fake</PackageProjectUrl>
-    <RepositoryUrl>http://github.com/nbalakin/MongoDB.Fake</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/win7user10/MongoDB.Fake</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/win7user10/MongoDB.Fake</RepositoryUrl>
     <PackageTags>mongo;mongodb;unit;test;fake</PackageTags>
   </PropertyGroup>
   <PropertyGroup>
     <TargetFramework>netstandard1.5</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="MongoDB.Driver" Version="2.4.2" />
+    <PackageReference Include="MongoDB.Driver" Version="2.7.2" />
   </ItemGroup>
 </Project>

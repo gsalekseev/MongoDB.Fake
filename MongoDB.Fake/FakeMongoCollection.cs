@@ -26,7 +26,9 @@ namespace MongoDB.Fake
 
         public override IBsonSerializer<TDocument> DocumentSerializer
         {
-            get { throw new NotImplementedException(); }
+            get {
+                return BsonSerializer.SerializerRegistry.GetSerializer<TDocument>();
+            }
         }
 
         public override IMongoIndexManager<TDocument> Indexes
@@ -59,7 +61,7 @@ namespace MongoDB.Fake
 
         public override IAsyncCursor<TProjection> FindSync<TProjection>(FilterDefinition<TDocument> filter, FindOptions<TDocument, TProjection> options = null, CancellationToken cancellationToken = default(CancellationToken))
         {
-            var filteredDocuments = Filter(filter);
+            var filteredDocuments = Filter(filter, options);
             var projectedDocuments = Project(filteredDocuments, options?.Projection);
             return new AsyncCursor<TProjection>(projectedDocuments);
         }
@@ -130,7 +132,22 @@ namespace MongoDB.Fake
 
         public override ReplaceOneResult ReplaceOne(FilterDefinition<TDocument> filter, TDocument replacement, UpdateOptions options = null, CancellationToken cancellationToken = default(CancellationToken))
         {
-            throw new NotImplementedException();
+            var documentsToReplace = Filter(filter);
+            var documentToReplace = documentsToReplace.FirstOrDefault();
+            if (documentToReplace != null)
+            {
+                _documents.Remove(documentToReplace);
+                var replacementDocument = SerializeDocument(replacement);
+                _documents.Add(replacementDocument);
+                BsonValue objectId = null;
+                try
+                {
+                    objectId = replacementDocument.GetElement("_id").Value;
+                }
+                catch { }
+                return new FakeReplaceOneResult(documentsToReplace.Count(), objectId, 1);
+            }
+            return new FakeReplaceOneResult(0);
         }
 
         public override DeleteResult DeleteMany(FilterDefinition<TDocument> filter, CancellationToken cancellationToken = default(CancellationToken))
@@ -168,6 +185,8 @@ namespace MongoDB.Fake
 
         public override IAsyncCursor<TResult> Aggregate<TResult>(PipelineDefinition<TDocument, TResult> pipeline, AggregateOptions options = null, CancellationToken cancellationToken = default(CancellationToken))
         {
+            var documentSerializer = BsonSerializer.SerializerRegistry.GetSerializer<TDocument>();
+            var renderedPipeline = pipeline.Render(documentSerializer, BsonSerializer.SerializerRegistry);
             throw new NotImplementedException();
         }
 
@@ -217,13 +236,29 @@ namespace MongoDB.Fake
             return _documents.Where(parsedFilter.Filter);
         }
 
+        private IEnumerable<BsonDocument> Filter<TProjection>(FilterDefinition<TDocument> filter, FindOptions<TDocument, TProjection> options = null)
+        {
+            var documents = Filter(filter);
+            if (options != null)
+            {
+                if (options.Skip != null)
+                    documents = documents.Skip((int)options.Skip);
+                if (options.Limit != null)
+                    documents = documents.Take((int)options.Limit);
+            }
+            return documents;
+        }
+
         private IEnumerable<TProjection> Project<TProjection>(IEnumerable<BsonDocument> documents, ProjectionDefinition<TDocument, TProjection> projection)
         {
             IBsonSerializer<TProjection> serializer;
 
             if (projection != null)
             {
-                throw new NotImplementedException();
+                var bsonSerializer = BsonSerializer.LookupSerializer<TDocument>();
+                var bsonSerializerRegistry = new BsonSerializerRegistry();
+                projection.Render(bsonSerializer, bsonSerializerRegistry);
+                serializer = projection.Render(bsonSerializer, bsonSerializerRegistry).ProjectionSerializer;
             }
             else
             {
