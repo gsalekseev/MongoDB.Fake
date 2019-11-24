@@ -247,8 +247,10 @@ namespace MongoDB.Fake.Tests
             Assert.Single(collection.Find(x => x.ArrayField.Any(i => i == "Hi")).ToList());
         }
 
-        [Fact]
-        public async Task AggregateUnwindOperation()
+        [Theory]
+        [InlineData(0, 0)]
+        [InlineData(1, 2)]
+        public async Task AggregateUnwindOperationWithMatch(int intField, int exceptedCount)
         {
             var testData = CreateTestData().ToList();
             var collection = _mongoCollectionProvider.GetCollection(nameof(FindWithArrayAnyFilter), testData);
@@ -259,14 +261,15 @@ namespace MongoDB.Fake.Tests
                     "Hi",
                     "Bye"
                 },
-                IntField = 1,
+                IntField = intField,
             });
 
             var result = collection.Aggregate()
+                .Match(x => x.IntField == 1)
                 .Unwind(x => x.ArrayField)
                 .As<AnotherSimpleTestDocument>()
                 .ToList();
-            Assert.Equal(2, result.Count);
+            Assert.Equal(exceptedCount, result.Count);
         }
 
         private IMongoCollection<SimpleTestDocument> CreateMongoCollection(string collectionName)

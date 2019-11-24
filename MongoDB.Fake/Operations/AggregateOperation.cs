@@ -4,56 +4,50 @@
     using MongoDB.Bson;
     using MongoDB.Bson.Serialization;
     using MongoDB.Driver;
+    using MongoDB.Fake.Aggregations;
+    using MongoDB.Fake.Filters;
+    using MongoDB.Fake.Filters.Parsers;
 
     public class AggregateOperation<TDocument, TResult> : IOperation
     {
-        private readonly IEnumerable<BsonDocument> _collection;
+        private readonly ICollection<BsonDocument> _collection;
+        private readonly IFilterParser _filterParser;
         private readonly PipelineDefinition<TDocument, TResult> _pipeline;
         private readonly AggregateOptions _options;
 
-        public AggregateOperation(IEnumerable<BsonDocument> collection, PipelineDefinition<TDocument, TResult> pipeline, AggregateOptions options = null)
+        public AggregateOperation(ICollection<BsonDocument> collection, PipelineDefinition<TDocument, TResult> pipeline, AggregateOptions options = null)
         {
             _collection = collection;
             _pipeline = pipeline;
             _options = options;
+            _filterParser = FilterParser.Instance;
         }
 
-        public IEnumerable<BsonDocument> Execute()
+        public ICollection<BsonDocument> Execute()
         {
             var documentSerializer = BsonSerializer.SerializerRegistry.GetSerializer<TDocument>();
-            var documents = new List<BsonDocument>(_collection);
+            var documents = _collection;
             foreach (var stage in _pipeline.Stages)
             {
-                documents = ExecuteOneOperation(stage, documentSerializer, documents);
+                documents = ExecuteAggregateOperation(stage, documentSerializer, documents);
             }
             return documents;
         }
 
-        private List<BsonDocument> ExecuteOneOperation(
+        private IFilter Filter(FilterDefinition<TDocument> filterDefinition)
+        {
+            var documentSerializer = BsonSerializer.SerializerRegistry.GetSerializer<TDocument>();
+            var filterBson = filterDefinition.Render(documentSerializer, BsonSerializer.SerializerRegistry);
+            return _filterParser.Parse(filterBson);
+        }
+
+        private ICollection<BsonDocument> ExecuteAggregateOperation(
             IPipelineStageDefinition pipelineStageDefinition,
             IBsonSerializer<TDocument> bsonSerializer,
-            List<BsonDocument> documents)
+            ICollection<BsonDocument> documents)
         {
-            if (pipelineStageDefinition.OperatorName == "$unwind")
-            {
-                List<BsonDocument> result = new List<BsonDocument>();
-                var renderedStage = pipelineStageDefinition.Render(bsonSerializer, BsonSerializer.SerializerRegistry);
-                var fieldForUnwind = renderedStage.Document.GetElement("$unwind").Value.AsString.Remove(0, 1);
-                foreach (var document in documents)
-                {
-                    if (document.AsBsonDocument.Contains(fieldForUnwind) && document.AsBsonDocument[fieldForUnwind].IsBsonArray)
-                    {
-                        for (int i = 0; i < document.AsBsonDocument[fieldForUnwind].AsBsonArray.Count; i++)
-                        {
-                            var unwindedDocument = new BsonDocument(document.AsBsonDocument);
-                            unwindedDocument[fieldForUnwind] = unwindedDocument[fieldForUnwind][i];
-                            result.Add(unwindedDocument.AsBsonDocument);
-                        }
-                    }
-                }
-                return result;
-            }
-            return documents;
+            var processor = new AggregateOperationParser<TDocument>(pipelineStageDefinition, bsonSerializer, documents);
+            return processor.Execute();
         }
     }
 }

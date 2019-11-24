@@ -7,9 +7,9 @@
     {
         private readonly ICollection<BsonDocument> _collectionImplementation;
 
-        public BsonDocumentCollection()
+        public BsonDocumentCollection(IEnumerable<BsonDocument> collection = null)
         {
-            _collectionImplementation = new List<BsonDocument>();
+            _collectionImplementation = collection != null ? new List<BsonDocument>(collection) : new List<BsonDocument>();
         }
 
         public IEnumerator<BsonDocument> GetEnumerator()

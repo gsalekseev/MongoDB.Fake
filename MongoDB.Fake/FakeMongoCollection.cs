@@ -8,6 +8,7 @@
     using MongoDB.Bson.IO;
     using MongoDB.Bson.Serialization;
     using MongoDB.Driver;
+    using MongoDB.Fake.Filters;
     using MongoDB.Fake.Filters.Parsers;
     using MongoDB.Fake.Operations;
 
@@ -186,8 +187,7 @@
 
         public override IAsyncCursor<TResult> Aggregate<TResult>(PipelineDefinition<TDocument, TResult> pipeline, AggregateOptions options = null, CancellationToken cancellationToken = default(CancellationToken))
         {
-            var collection = Filter(new FilterDefinitionBuilder<TDocument>().Empty);
-            var operation = new AggregateOperation<TDocument, TResult>(collection, pipeline, options);
+            var operation = new AggregateOperation<TDocument, TResult>(_documents, pipeline, options);
             var result = operation.Execute();
             var desirializedDocuments = DeserializeDocuments(result, BsonSerializer.LookupSerializer<TResult>());
             return new AsyncCursor<TResult>(desirializedDocuments);
@@ -231,12 +231,14 @@
 
         private IEnumerable<BsonDocument> Filter(FilterDefinition<TDocument> filter)
         {
+            return _documents.Where(RenderFilterDefinition(filter).Filter);
+        }
+
+        private IFilter RenderFilterDefinition(FilterDefinition<TDocument> filter)
+        {
             var documentSerializer = BsonSerializer.SerializerRegistry.GetSerializer<TDocument>();
             var filterBson = filter.Render(documentSerializer, BsonSerializer.SerializerRegistry);
-
-            var parsedFilter = _filterParser.Parse(filterBson);
-
-            return _documents.Where(parsedFilter.Filter);
+            return _filterParser.Parse(filterBson);
         }
 
         private IEnumerable<BsonDocument> Filter<TProjection>(FilterDefinition<TDocument> filter, FindOptions<TDocument, TProjection> options = null)

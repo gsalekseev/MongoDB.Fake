@@ -5,7 +5,7 @@
 
     interface IOperation
     {
-        IEnumerable<BsonDocument> Execute();
+        ICollection<BsonDocument> Execute();
 
     }
 }
