@@ -24,7 +24,7 @@ namespace MongoDB.Fake.Tests
             return mongoCollection;
         }
 
-        private IMongoCollection<TDocument> CreateRealMongoCollection(string collectionName, IEnumerable<TDocument> data)
+        public IMongoCollection<TDocument> CreateRealMongoCollection(string collectionName, IEnumerable<TDocument> data)
         {
             var client = new MongoClient(MongoUrl.Create("mongodb://localhost"));
             var database = client.GetDatabase("fake-database");

@@ -247,6 +247,28 @@ namespace MongoDB.Fake.Tests
             Assert.Single(collection.Find(x => x.ArrayField.Any(i => i == "Hi")).ToList());
         }
 
+        [Fact]
+        public async Task AggregateUnwindOperation()
+        {
+            var testData = CreateTestData().ToList();
+            var collection = _mongoCollectionProvider.GetCollection(nameof(FindWithArrayAnyFilter), testData);
+            collection.InsertOne(new SimpleTestDocument()
+            { 
+                ArrayField = new[]
+                { 
+                    "Hi",
+                    "Bye"
+                },
+                IntField = 1,
+            });
+
+            var result = collection.Aggregate()
+                .Unwind(x => x.ArrayField)
+                .As<AnotherSimpleTestDocument>()
+                .ToList();
+            Assert.Equal(2, result.Count);
+        }
+
         private IMongoCollection<SimpleTestDocument> CreateMongoCollection(string collectionName)
         {
             var testData = CreateTestData();

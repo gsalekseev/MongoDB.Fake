@@ -9,6 +9,8 @@
     using MongoDB.Bson.Serialization;
     using MongoDB.Driver;
     using MongoDB.Fake.Filters.Parsers;
+    using MongoDB.Fake.Operations;
+
     public class FakeMongoCollection<TDocument> : SyncMongoCollection<TDocument>
     {
         private readonly IFilterParser _filterParser;
@@ -184,9 +186,11 @@
 
         public override IAsyncCursor<TResult> Aggregate<TResult>(PipelineDefinition<TDocument, TResult> pipeline, AggregateOptions options = null, CancellationToken cancellationToken = default(CancellationToken))
         {
-            var documentSerializer = BsonSerializer.SerializerRegistry.GetSerializer<TDocument>();
-            var renderedPipeline = pipeline.Render(documentSerializer, BsonSerializer.SerializerRegistry);
-            throw new NotImplementedException();
+            var collection = Filter(new FilterDefinitionBuilder<TDocument>().Empty);
+            var operation = new AggregateOperation<TDocument, TResult>(collection, pipeline, options);
+            var result = operation.Execute();
+            var desirializedDocuments = DeserializeDocuments(result, BsonSerializer.LookupSerializer<TResult>());
+            return new AsyncCursor<TResult>(desirializedDocuments);
         }
 
         public override long Count(FilterDefinition<TDocument> filter, CountOptions options = null, CancellationToken cancellationToken = default(CancellationToken))
@@ -264,6 +268,11 @@
                 serializer = BsonSerializer.LookupSerializer<TProjection>();
             }
 
+            return DeserializeDocuments(documents, serializer);
+        }
+
+        private IEnumerable<TProjection> DeserializeDocuments<TProjection>(IEnumerable<BsonDocument> documents, IBsonSerializer<TProjection> serializer)
+        {
             foreach (var document in documents)
             {
                 yield return DeserializeDocument(document, serializer);
