@@ -9,7 +9,8 @@
     <PackageTags>mongo;mongodb;unit;test;fake</PackageTags>
   </PropertyGroup>
   <PropertyGroup>
-    <TargetFramework>netstandard1.5</TargetFramework>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <LangVersion>7.3</LangVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="MongoDB.Driver" Version="2.7.2" />
