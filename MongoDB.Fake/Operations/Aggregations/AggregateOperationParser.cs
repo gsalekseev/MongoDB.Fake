@@ -1,4 +1,4 @@
-﻿namespace MongoDB.Fake.Aggregations
+﻿namespace MongoDB.Fake.Operations.Aggregations
 {
     using MongoDB.Bson;
     using MongoDB.Bson.Serialization;
@@ -8,14 +8,14 @@
     using System.Collections.Generic;
 
 
-    public class AggregateOperationParser<TDocument> : IOperation
+    public class UpdateOperationParser<TDocument> : IOperation
     {
         IPipelineStageDefinition _pipelineStageDefinition;
         IBsonSerializer<TDocument> _bsonSerializer;
         ICollection<BsonDocument> _documents;
         Dictionary<string, IOperation> _operations;
 
-        public AggregateOperationParser(IPipelineStageDefinition pipelineStageDefinition,
+        public UpdateOperationParser(IPipelineStageDefinition pipelineStageDefinition,
             IBsonSerializer<TDocument> bsonSerializer,
             ICollection<BsonDocument> documents)
         {
@@ -29,8 +29,10 @@
         {
             return new Dictionary<string, IOperation>()
             {
-                { Aggregations.Unwind, new UnwindOperation<TDocument>(_pipelineStageDefinition, _bsonSerializer, _documents)},
-                { Aggregations.Match, new MatchOperation<TDocument>(_pipelineStageDefinition, _bsonSerializer, _documents)},
+                { Operators.Unwind, new UnwindOperation<TDocument>(_pipelineStageDefinition, _bsonSerializer, _documents)},
+                { Operators.Match, new MatchOperation<TDocument>(_pipelineStageDefinition, _bsonSerializer, _documents)},
+                { Operators.Projection, new ProjectOperation<TDocument>(_pipelineStageDefinition, _bsonSerializer, _documents)},
+                { Operators.Limit, new LimitOperation<TDocument>(_pipelineStageDefinition, _bsonSerializer, _documents)},
             };
         }
 
@@ -41,7 +43,7 @@
             {
                 return operation.Execute();
             }
-            throw new NotImplementedException();
+            throw new NotImplementedException($"Aggregate operation {_pipelineStageDefinition.OperatorName} not supported");
         }
     }
 }

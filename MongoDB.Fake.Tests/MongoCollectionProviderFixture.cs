@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
@@ -30,7 +31,8 @@ namespace MongoDB.Fake.Tests
             var database = client.GetDatabase("fake-database");
             database.DropCollection(collectionName);
             var collection = database.GetCollection<TDocument>(collectionName);
-            collection.InsertMany(data);
+            if(data != null && data.Count() > 0)
+                collection.InsertMany(data);
             return collection;
         }
     }

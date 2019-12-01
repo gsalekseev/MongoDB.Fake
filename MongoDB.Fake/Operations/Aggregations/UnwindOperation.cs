@@ -1,4 +1,4 @@
-﻿namespace MongoDB.Fake.Aggregations
+﻿namespace MongoDB.Fake.Operations.Aggregations
 {
     using MongoDB.Bson;
     using MongoDB.Bson.Serialization;

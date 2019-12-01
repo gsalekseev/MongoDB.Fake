@@ -10,7 +10,8 @@
     using MongoDB.Driver;
     using MongoDB.Fake.Filters;
     using MongoDB.Fake.Filters.Parsers;
-    using MongoDB.Fake.Operations;
+    using MongoDB.Fake.Operations.Aggregations;
+    using MongoDB.Fake.Operations.Updates;
 
     public class FakeMongoCollection<TDocument> : SyncMongoCollection<TDocument>
     {
@@ -21,7 +22,7 @@
 
         public override CollectionNamespace CollectionNamespace
         {
-            get { throw new NotImplementedException(); }
+            get { return new CollectionNamespace("test_database", typeof(TDocument).ToString()); }
         }
 
         public override IMongoDatabase Database => _database;
@@ -40,7 +41,7 @@
 
         public override MongoCollectionSettings Settings
         {
-            get { throw new NotImplementedException(); }
+            get { return new MongoCollectionSettings(); }
         }
 
         public FakeMongoCollection()
@@ -51,7 +52,6 @@
         public FakeMongoCollection(BsonDocumentCollection documents)
         {
             _documents = documents;
-
             _filterParser = FilterParser.Instance;
         }
 
@@ -124,7 +124,26 @@
 
         public override UpdateResult UpdateOne(FilterDefinition<TDocument> filter, UpdateDefinition<TDocument> update, UpdateOptions options = null, CancellationToken cancellationToken = default(CancellationToken))
         {
-            throw new NotImplementedException();
+            var documentsToUpdate = Filter(filter);
+            var documentToUpdate = documentsToUpdate.FirstOrDefault();
+            if (documentToUpdate != null)
+            {
+                var updateDefenition = update.Render(BsonSerializer.LookupSerializer<TDocument>(), new BsonSerializerRegistry());
+                var operation = new UpdateOperation<TDocument>(documentToUpdate, updateDefenition, options);
+                var updatedItem = operation.Execute().First();
+
+                _documents.Remove(documentToUpdate);
+                _documents.Add(updatedItem);
+
+                BsonValue objectId = null;
+                try
+                {
+                    objectId = documentToUpdate.GetElement("_id").Value;
+                }
+                catch { }
+                return new FakeUpdateResult(documentsToUpdate.Count(), objectId, 1);
+            }
+            return new FakeUpdateResult(0);
         }
 
         public override UpdateResult UpdateMany(FilterDefinition<TDocument> filter, UpdateDefinition<TDocument> update, UpdateOptions options = null, CancellationToken cancellationToken = default(CancellationToken))

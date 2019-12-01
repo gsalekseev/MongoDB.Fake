@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
+using MongoDB.Bson;
 using MongoDB.Driver;
 using Xunit;
 
@@ -248,28 +249,78 @@ namespace MongoDB.Fake.Tests
         }
 
         [Theory]
-        [InlineData(0, 0)]
-        [InlineData(1, 2)]
+        [InlineData(1, 1)]
+        [InlineData(2, 0)]
         public async Task AggregateUnwindOperationWithMatch(int intField, int exceptedCount)
         {
             var testData = CreateTestData().ToList();
             var collection = _mongoCollectionProvider.GetCollection(nameof(FindWithArrayAnyFilter), testData);
             collection.InsertOne(new SimpleTestDocument()
-            { 
-                ArrayField = new[]
-                { 
-                    "Hi",
-                    "Bye"
+            {
+                AnotherChildrenDocuments = new[]
+                {
+                    new AnotherChildDocument()
+                    { 
+                        StringField = "Hi",
+                        Image = new Image { Name = "10" },
+                    },
+                    new AnotherChildDocument()
+                    {
+                        StringField = "Bye",
+                        Image = new Image { Name = "16" },
+                    },
                 },
                 IntField = intField,
             });
 
+            var currentProjection = new BsonDocumentProjectionDefinition<BsonDocument>(
+                BsonDocument.Parse("{ Image: \"$AnotherChildrenDocuments.Image\" }"));
+
             var result = collection.Aggregate()
                 .Match(x => x.IntField == 1)
-                .Unwind(x => x.ArrayField)
-                .As<AnotherSimpleTestDocument>()
+                .Unwind(x => x.AnotherChildrenDocuments)
+                .Match(x => x["AnotherChildrenDocuments.StringField"] == "Hi")
+                .Project(currentProjection)
+                .As<SimpleTestDocument>()
                 .ToList();
             Assert.Equal(exceptedCount, result.Count);
+        }
+
+        [Fact]
+        public async Task UpdateOne()
+        {
+            var testData = CreateTestData().ToList();
+            var collection = _mongoCollectionProvider.GetCollection(nameof(UpdateOne), new SimpleTestDocument[0]);
+            collection.InsertOne(new SimpleTestDocument()
+            {
+                AnotherChildrenDocuments = new[]
+                {
+                    new AnotherChildDocument()
+                    {
+                        StringField = "Hi",
+                        Image = new Image { Name = "10" },
+                    },
+                    new AnotherChildDocument()
+                    {
+                        StringField = "Hi",
+                        Image = new Image { Name = "16" },
+                    },
+                },
+                IntField = 14,
+            });
+
+            var filter = Builders<SimpleTestDocument>.Filter.And(
+                Builders<SimpleTestDocument>.Filter.Where(x => x.IntField == 14),
+                Builders<SimpleTestDocument>.Filter.ElemMatch(x => x.AnotherChildrenDocuments, i => i.StringField == "Hi"));
+            var update = Builders<SimpleTestDocument>.Update.Set(
+                x => x.AnotherChildrenDocuments.ElementAt(-1).Image,
+                new Image { Name = "80" });
+            collection.UpdateOne(filter, update);
+
+            var result = Assert.Single(collection.Find(x => x.IntField == 14).ToList());
+            Assert.Equal("80", result.AnotherChildrenDocuments[0].Image.Name);
+            Assert.Equal("16", result.AnotherChildrenDocuments[1].Image.Name);
+
         }
 
         private IMongoCollection<SimpleTestDocument> CreateMongoCollection(string collectionName)

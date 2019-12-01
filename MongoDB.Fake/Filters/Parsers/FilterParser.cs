@@ -34,6 +34,8 @@
             result.Add(Operators.In, new InFilterParser());
             result.Add(Operators.Nin, new NotInFilterParser());
 
+            result.Add(Operators.ElemMatch, new ElemMatchFilterParser());
+
             return result;
         }
 
