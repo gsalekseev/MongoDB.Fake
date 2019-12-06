@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MongoDB.Bson.Serialization.Attributes;
+using System;
 
 namespace MongoDB.Fake.Tests
 {
@@ -22,7 +23,7 @@ namespace MongoDB.Fake.Tests
     }
 
     public class Image
-    { 
+    {
         public string Name { get; set; }
     }
 
@@ -32,5 +33,11 @@ namespace MongoDB.Fake.Tests
         public int IntField { get; set; }
         public Image Image { get; set; }
         public DateTime CreatedAt { get; set; }
+    }
+
+    public class DocumentWithBsonId
+    {
+        [BsonId]
+        public string Id { get; set; }
     }
 }

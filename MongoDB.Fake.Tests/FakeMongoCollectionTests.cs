@@ -274,7 +274,7 @@ namespace MongoDB.Fake.Tests
             });
 
             var currentProjection = new BsonDocumentProjectionDefinition<BsonDocument>(
-                BsonDocument.Parse("{ Image: \"$AnotherChildrenDocuments.Image\" }"));
+                BsonDocument.Parse("{ Image: \"$AnotherChildrenDocuments.Image\", _id: 0, value: 1992 }"));
 
             var result = collection.Aggregate()
                 .Match(x => x.IntField == 1)
@@ -320,7 +320,58 @@ namespace MongoDB.Fake.Tests
             var result = Assert.Single(collection.Find(x => x.IntField == 14).ToList());
             Assert.Equal("80", result.AnotherChildrenDocuments[0].Image.Name);
             Assert.Equal("16", result.AnotherChildrenDocuments[1].Image.Name);
+        }
 
+        [Fact]
+        public async Task UpdateOneWithPush()
+        {
+            var testData = CreateTestData().ToList();
+            var collection = _mongoCollectionProvider.GetCollection(nameof(UpdateOne), new SimpleTestDocument[0]);
+            collection.InsertOne(new SimpleTestDocument()
+            {
+                AnotherChildrenDocuments = new[]
+                {
+                    new AnotherChildDocument()
+                    {
+                        StringField = "Hi",
+                        Image = new Image { Name = "10" },
+                    },
+                    new AnotherChildDocument()
+                    {
+                        StringField = "Hi",
+                        Image = new Image { Name = "16" },
+                    },
+                },
+                IntField = 14,
+            });
+
+            var document = new AnotherChildDocument()
+            {
+                StringField = "Oooo",
+                Image = new Image { Name = "24" },
+            };
+
+            var filter = Builders<SimpleTestDocument>.Filter.Where(x =>
+                x.IntField == 14);
+            var update = Builders<SimpleTestDocument>.Update.Push(x => x.AnotherChildrenDocuments, document);
+            collection.UpdateOne(filter, update);
+
+            var result = Assert.Single(collection.Find(x => x.IntField == 14).ToList());
+            Assert.Equal(3, result.AnotherChildrenDocuments.Count());
+            Assert.Equal("10", result.AnotherChildrenDocuments[0].Image.Name);
+            Assert.Equal("16", result.AnotherChildrenDocuments[1].Image.Name);
+            Assert.Equal("24", result.AnotherChildrenDocuments[2].Image.Name);
+        }
+
+        [Fact]
+        public async Task InsertShouldCreateId()
+        {
+            var mongoCollection = new FakeMongoCollection<DocumentWithBsonId>();
+            mongoCollection.InsertOne(new DocumentWithBsonId());
+            var result = Assert.Single(mongoCollection.Find(_ => true)
+                .Limit(1)
+                .ToList());
+            Assert.NotNull(result.Id);
         }
 
         private IMongoCollection<SimpleTestDocument> CreateMongoCollection(string collectionName)

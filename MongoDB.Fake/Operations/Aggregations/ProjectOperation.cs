@@ -35,15 +35,15 @@
                 BsonDocument projectedDocument = new BsonDocument();
                 for (int i = 0; i < projections.Names.Count(); i++)
                 {
-                    var whatToTake = projections.Values.ElementAt(i).AsString;
-                    if (whatToTake.StartsWith("$"))
+                    var whatToTake = projections.Values.ElementAt(i);
+                    if (whatToTake.IsString && whatToTake.AsString.StartsWith("$"))
                     {
-                        var projectedValue = document.Find(whatToTake.Remove(0, 1));
+                        var projectedValue = document.Find(whatToTake.AsString.Remove(0, 1));
                         projectedDocument.Add(projections.Names.ElementAt(i), projectedValue);
                     }
                     else
                     {
-                        projectedDocument.Add(projections.Names.ElementAt(i), whatToTake.ToBsonDocument());
+                        projectedDocument.Add(projections.Names.ElementAt(i), whatToTake.AsBsonValue);
                     }
                 }
                 result.Add(projectedDocument);

@@ -7,18 +7,21 @@ namespace MongoDB.Fake.Tests
 {
     public class MongoCollectionProviderFixture<TDocument>
     {
-        public IMongoCollection<TDocument> GetCollection(string collectionName, IEnumerable<TDocument> data)
+        public IMongoCollection<TDocument> GetCollection(string collectionName, IEnumerable<TDocument> data = null)
         {
             return CreateFakeMongoCollection(collectionName, data);
         }
 
-        private IMongoCollection<TDocument> CreateFakeMongoCollection(string collectionName, IEnumerable<TDocument> data)
+        private IMongoCollection<TDocument> CreateFakeMongoCollection(string collectionName, IEnumerable<TDocument> data = null)
         {
             var documentCollection = new BsonDocumentCollection();
-            foreach (var document in data)
+            if (data != null)
             {
-                var bsonDocument = document.ToBsonDocument();
-                documentCollection.Add(bsonDocument);
+                foreach (var document in data)
+                {
+                    var bsonDocument = document.ToBsonDocument();
+                    documentCollection.Add(bsonDocument);
+                }
             }
 
             var mongoCollection = new FakeMongoCollection<TDocument>(documentCollection);

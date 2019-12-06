@@ -1,8 +1,6 @@
 ﻿namespace MongoDB.Fake.Operations.Updates
 {
     using MongoDB.Bson;
-    using MongoDB.Bson.Serialization;
-    using MongoDB.Driver;
     using MongoDB.Fake.Operations;
     using System;
     using System.Collections.Generic;
@@ -27,6 +25,7 @@
             return new Dictionary<string, IOperation>()
             {
                 { Operators.Set, new SetOperation<TDocument>(_updateDefintion, _documents)},
+                { Operators.Push, new PushOperation<TDocument>(_updateDefintion, _documents)},
             };
         }
 

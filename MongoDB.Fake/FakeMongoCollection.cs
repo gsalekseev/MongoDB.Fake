@@ -7,6 +7,7 @@
     using MongoDB.Bson;
     using MongoDB.Bson.IO;
     using MongoDB.Bson.Serialization;
+    using MongoDB.Bson.Serialization.Attributes;
     using MongoDB.Driver;
     using MongoDB.Fake.Filters;
     using MongoDB.Fake.Filters.Parsers;
@@ -302,6 +303,12 @@
 
         private BsonDocument SerializeDocument<T>(T document)
         {
+            var bsonIdAttribute = document.GetType().GetProperties().Where(prop => Attribute.IsDefined(prop, typeof(BsonIdAttribute))).FirstOrDefault();
+            if (bsonIdAttribute != null && bsonIdAttribute.GetValue(document) == null)
+            {
+                bsonIdAttribute.SetValue(document, ObjectId.GenerateNewId().ToString());
+            }
+
             var serializer = BsonSerializer.LookupSerializer<T>();
             return SerializeDocument(document, serializer);
         }
@@ -313,10 +320,34 @@
 
         private T DeserializeDocument<T>(BsonDocument document, IBsonSerializer<T> serializer)
         {
-            using (var reader = new BsonDocumentReader(document))
+            var tempDocument = new BsonDocument(document);
+            var attributes = typeof(T).GetProperties();
+            if (attributes.Length > 0)
             {
-                var deserializationContext = BsonDeserializationContext.CreateRoot(reader);
-                return serializer.Deserialize(deserializationContext);
+                foreach (var element in tempDocument.Elements.ToList())
+                {
+                    if (element.Name != "_id" && !attributes.Any(x => x.Name == element.Name))
+                    {
+                        tempDocument.Remove(element.Name);
+                    }
+                }
+            }
+            try
+            {
+                using (var reader = new BsonDocumentReader(tempDocument))
+                {
+                    var deserializationContext = BsonDeserializationContext.CreateRoot(reader);
+                    return serializer.Deserialize(deserializationContext);
+                }
+            }
+            catch (Exception e)
+            {
+                tempDocument.Remove("_id");
+                using (var reader = new BsonDocumentReader(tempDocument))
+                {
+                    var deserializationContext = BsonDeserializationContext.CreateRoot(reader);
+                    return serializer.Deserialize(deserializationContext);
+                }
             }
         }
     }
